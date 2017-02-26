@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CreditMapper">
+
+	<!--表名 -->
+	<sql id="tableName">
+		TB_CREDIT
+	</sql>
+
+	<!-- 字段 -->
+	<sql id="Field">
+		ORDER_ID,	
+		INSTALMENTORDER,	
+		INSTALMENTFEE,	
+		INTEREST,
+		STARTTIME,
+		ENDTIME,
+		CREDIT_ID
+	</sql>
+
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{ORDER_ID},	
+		#{INSTALMENTORDER},	
+		#{INSTALMENTFEE},
+		#{INTEREST},
+		#{STARTTIME},
+		#{ENDTIME},
+		#{CREDIT_ID}
+	</sql>
+
+	<!-- 新增-->
+	<insert id="save" parameterType="pd">
+		insert into
+		<include refid="tableName"></include>
+		(
+		<include refid="Field"></include>
+		) values (
+		<include refid="FieldValue"></include>
+		)
+	</insert>
+
+	<!-- 删除-->
+	<delete id="delete" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where
+		CREDIT_ID = #{CREDIT_ID}
+	</delete>
+
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update
+		<include refid="tableName"></include>
+		set
+		INSTALMENTFEE = #{INSTALMENTFEE},
+		PAYEDFEE = #{PAYEDFEE},
+		PAYEDTIME = #{PAYEDTIME},
+		PAYEDTYPE = #{PAYEDTYPE},
+		CREDIT_ID = CREDIT_ID
+		where
+		CREDIT_ID = #{CREDIT_ID}
+	</update>
+
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+		where
+		CREDIT_ID = #{CREDIT_ID}
+	</select>
+
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		SELECT TCT.*,ORDERNAME,ORDERVALUE,ITEM
+		FROM TB_CREDIT TCT
+		INNER JOIN TB_ORDER TOR ON TCT.ORDER_ID = TOR.ORDER_ID
+		where 1=1
+		<if test="pd.lastStart!=null and pd.lastStart!=''"><!-- 开始时间检索 -->
+			and TCT.CREATETIME &gt;= #{pd.lastStart}
+		</if>
+		<if test="pd.lastEnd!=null and pd.lastEnd!=''"><!-- 结束时间检索 -->
+			and TCT.CREATETIME &lt;= #{pd.lastEnd}
+		</if>
+		<if test="pd.ORDER_ID!=null and pd.ORDER_ID!=''"><!-- 按订单号检索 -->
+			and TCT.ORDER_ID = #{pd.ORDER_ID}
+		</if>
+		ORDER BY TCT.ORDER_ID,INSTALMENTORDER
+		<!--<if test="pd.CHANNEL_IDS!=null and pd.CHANNEL_IDS!=''">&lt;!&ndash; 渠道ids &ndash;&gt;-->
+			<!--and LOCATE(concat(',',A.CHANNEL_ID),#{pd.CHANNEL_IDS})>0-->
+		<!--</if>-->
+	</select>
+
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+	</select>
+
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from
+		<include refid="tableName"></include>
+		where
+		CREDIT_ID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+
+</mapper>

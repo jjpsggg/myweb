@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="InstalmentMapper">
+	
+	<!--表名 -->
+	<sql id="tableName">
+		TB_INSTALMENT
+	</sql>
+	
+	<!-- 字段 -->
+	<sql id="Field">
+		TYPEID,	
+		TYPENAME,	
+		ITEM,	
+		FEERATE,	
+		COMMISSION,
+		OVERDUEFEERATE,	
+		OVERDUECOMMISSION,	
+		INSTALMENT_ID
+	</sql>
+	
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{TYPEID},	
+		#{TYPENAME},	
+		#{ITEM},	
+		#{FEERATE},	
+		#{COMMISSION},
+		#{OVERDUEFEERATE},	
+		#{OVERDUECOMMISSION},	
+		#{INSTALMENT_ID}
+	</sql>
+	
+	<!-- 新增-->
+	<insert id="save" parameterType="pd">
+		insert into 
+	<include refid="tableName"></include>
+		(
+	<include refid="Field"></include>
+		) values (
+	<include refid="FieldValue"></include>
+		)
+	</insert>
+	
+	<!-- 删除-->
+	<delete id="delete" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where 
+			INSTALMENT_ID = #{INSTALMENT_ID}
+	</delete>
+	
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update
+		<include refid="tableName"></include>
+		set 
+			TYPEID = #{TYPEID},
+			TYPENAME = #{TYPENAME},
+			ITEM = #{ITEM},
+			FEERATE = #{FEERATE},
+			COMMISSION = #{COMMISSION},
+			OVERDUEFEERATE = #{OVERDUEFEERATE},
+			OVERDUECOMMISSION = #{OVERDUECOMMISSION},
+		INSTALMENT_ID = INSTALMENT_ID
+		where 
+		INSTALMENT_ID = #{INSTALMENT_ID}
+	</update>
+	
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select
+		<include refid="Field"></include>
+		from
+		<include refid="tableName"></include>
+		where
+		INSTALMENT_ID = #{INSTALMENT_ID}
+	</select>
+
+	<!-- 通过ID获取数据 -->
+	<select id="findByPd" parameterType="pd" resultType="pd">
+		SELECT MAX(FEERATE) AS RATE,A.* FROM TB_INSTALMENT A WHERE TYPEID IN (
+SELECT ORGANIZATION_ID FROM TB_ORGANIZATION WHERE PRODUCT_ID IN(
+SELECT PRODUCT_ID FROM TB_CHANNEL WHERE CHANNEL_ID =#{TYPEID} )) AND ITEM = #{ITEM}
+
+	</select>
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		select
+		*
+		from 
+		<include refid="tableName"></include>
+		where 1=1
+		<if test="pd.TYPENAME!= null and pd.TYPENAME != ''">
+			and TYPENAME = #{pd.TYPENAME}
+		</if>
+		<if test="pd.TYPEID!= null and pd.TYPEID != ''"><!-- 关键词检索 -->
+			and TYPEID = #{pd.TYPEID}
+		</if>
+		order by item
+	</select>
+	
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+		*
+		from 
+		<include refid="tableName"></include>
+		where 1=1
+		<if test="CHANNEL_ID!= null and CHANNEL_ID != ''">
+			and TYPEID = #{CHANNEL_ID}
+		</if>
+		order by item
+	</select>
+
+	<!-- 列表(期次) -->
+	<select id="listTerm" parameterType="pd" resultType="pd">
+		SELECT DISTINCT ITEM FROM TB_INSTALMENT WHERE TYPEID IN (
+		SELECT ORGANIZATION_ID FROM TB_ORGANIZATION WHERE PRODUCT_ID IN(
+		SELECT PRODUCT_ID FROM TB_CHANNEL WHERE CHANNEL_ID = #{TYPEID})) ORDER BY ITEM
+
+	</select>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from
+		<include refid="tableName"></include>
+		where 
+			INSTALMENT_ID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	
+
+</mapper>
